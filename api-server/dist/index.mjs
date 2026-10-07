@@ -92637,39 +92637,106 @@ function mockGenerateStructured(task, context) {
   const taskLower = (task || '').toLowerCase();
   const c = context || {};
 
-  // 1. Analyse du sujet
-  if (taskLower.includes('sujet') || taskLower.includes('subject')) {
-    const s = c.subject || 'Sujet de recherche académique';
+  // 1. Quiz de compréhension (5 questions à 4 choix)
+  if (taskLower.includes('choix multiples') || taskLower.includes('cinq questions')) {
+    const conceptName = c.concept || "Méthodologie de recherche";
     return {
-      clarity: 82,
-      scope: 78,
-      feasibility: 85,
-      feedback: `Le sujet proposé « ${s} » constitue une base prometteuse${c.field ? ` dans le domaine de ${c.field}` : ''}. Pour un niveau ${c.level || 'universitaire'}, il est recommandé de clarifier les concepts charnières dès l'introduction et de délimiter le terrain d'investigation pour garantir la faisabilité du calendrier de recherche.`,
-      proposals: [
+      concept: conceptName,
+      questions: [
         {
-          title: `Analyse empirique et perspectives critiques de : ${s}`,
-          rationale: "Cette formulation resserre l'angle de recherche sur les faits observables et facilite la collecte de données concrètes sur le terrain.",
-          strengths: ["Cadrage conceptuel rigoureux", "Démarche méthodologique directement opérationnelle"],
-          limits: ["Nécessite un accès direct à des données fiables ou un corpus documentaire qualifié"]
+          question: `Quel est le rôle fondamental de la notion « ${conceptName} » dans une démarche universitaire ?`,
+          options: [
+            "L'utiliser comme simple mot-clé sans justification",
+            "Poser un cadre théorique solide et des repères observables",
+            "Éviter de confronter les données du terrain",
+            "Remplacer les références d'auteurs reconnus"
+          ],
+          answerIndex: 1,
+          explanation: "En démarche académique, chaque concept central permet d'opérationnaliser la réflexion et de guider la démonstration."
         },
         {
-          title: `Enjeux, tensions et dynamiques contemporaines autour de : ${s}`,
-          rationale: "Une orientation qui permet d'explorer les débats actuels et de confronter différents points de vue théoriques.",
-          strengths: ["Favorise une réflexion critique approfondie", "Permet de croiser plusieurs grilles de lecture interdisciplinaires"],
-          limits: ["Risque de dispersion si les critères de délimitation ne sont pas strictement posés"]
+          question: `Comment opérationnaliser concrètement « ${conceptName} » sur le terrain d'investigation ?`,
+          options: [
+            "En ignorant les variables du milieu d'étude",
+            "En traduisant le concept en indicateurs observables et mesurables",
+            "En recopiant un travail antérieur sans adaptation",
+            "En éliminant les hypothèses de recherche"
+          ],
+          answerIndex: 1,
+          explanation: "L'opérationnalisation consiste à faire le pont entre la théorie abstraite et les faits observables recueillis sur le terrain."
         },
         {
-          title: `Pratiques, mutations et facteurs déterminants dans : ${s}`,
-          rationale: "Cette approche met en lumière les leviers d'action et les facteurs explicatifs du phénomène étudié.",
-          strengths: ["Forte valeur ajoutée méthodologique", "Résultats facilement transposables et discutables"],
-          limits: ["Exige de bien distinguer les causes des simples corrélations observées"]
+          question: `Quelle posture adopter face aux limites méthodologiques liées à « ${conceptName} » ?`,
+          options: [
+            "Passer les limites sous silence pour valoriser l'étude",
+            "Expliciter les limites avec rigueur pour situer la portée des résultats",
+            "Contester systématiquement les remarques de l'encadrant",
+            "Changer de démarche à la veille de la soutenance"
+          ],
+          answerIndex: 1,
+          explanation: "La lucidité critique sur les limites de son travail témoigne d'une maturité scientifique appréciée par le jury."
         }
       ]
     };
   }
 
-  // 2. Problématique
-  if (taskLower.includes('problématique') || taskLower.includes('problem')) {
+  // 2. Guides : explication de concept (3 niveaux + glossaire)
+  if (taskLower.includes('trois niveaux') || taskLower.includes('concept académique')) {
+    const conceptName = c.concept || "Concept méthodologique";
+    return {
+      concept: conceptName,
+      basic: `En termes simples, « ${conceptName} » désigne une notion clé qui vous sert de boussole pour comprendre et circonscrire votre sujet.`,
+      applied: `Dans le cadre de votre projet${c.subject ? ` sur « ${c.subject} »` : ''}, cette notion permet de formuler des hypothèses de travail précises et de cadrer la collecte de vos données.`,
+      advanced: "Sur le plan épistémologique et théorique, il convient d'analyser les débats doctrinaux contemporains pour positionner rigoureusement votre propre angle d'analyse.",
+      example: `Exemple concret : observer comment « ${conceptName} » s'illustre dans les pratiques concrètes des acteurs de votre secteur d'étude.`,
+      glossary: [
+        { term: conceptName, definition: "Notion directrice servant de point d'ancrage conceptuel à l'investigation." },
+        { term: "Méthodologie", definition: "Ensemble des démarches rationnelles organisées pour valider une démonstration scientifique." }
+      ]
+    };
+  }
+
+  // 3. Relecture / Rédaction (texte fourni)
+  if (taskLower.includes('texte fourni') || taskLower.includes('applique l\'action') || taskLower.includes('action «')) {
+    const rawText = (c.text || c.originalText || '').trim();
+    return {
+      revisedText: rawText || "Texte retravaillé avec clarté et précision méthodologique.",
+      feedback: "Le texte proposé a été structuré pour renforcer sa fluidité, éliminer les ambiguïtés et valoriser la démarche de démonstration.",
+      claimsToSource: [
+        "Pensez à insérer les références bibliographiques académiques (auteur, année) pour étayer vos arguments centraux."
+      ],
+      learningNote: "En rédaction universitaire, la rigueur terminologique et la neutralité du ton augmentent l'autorité de votre argumentation."
+    };
+  }
+
+  // 4. Simulation de jury : première question
+  if (taskLower.includes('question orale') || taskLower.includes('première question') || (taskLower.includes('jury') && taskLower.includes('réaliste'))) {
+    return {
+      question: "Pourriez-vous expliciter en quoi votre démarche méthodologique et votre protocole d'enquête permettent de répondre précisément à votre question centrale de recherche ?"
+    };
+  }
+
+  // 5. Simulation de jury : évaluation de réponse
+  if (taskLower.includes('évalue de façon') || taskLower.includes('note entière sur 100') || taskLower.includes('réponse de l\'étudiant au jury')) {
+    const qNum = c.questionNumber || 1;
+    return {
+      score: 84,
+      strengths: [
+        "Réponse posée et posture académique bien maîtrisée",
+        "Argumentation cohérente reliant démarche et objectifs de recherche"
+      ],
+      improvements: [
+        "Appuyer votre réponse sur un exemple concret observé sur votre terrain d'étude",
+        "Évoquer avec lucidité les contraintes méthodologiques rencontrées"
+      ],
+      advice: "Maintenez ce calme et prenez le temps de structurer votre pensée avant chaque prise de parole face au jury.",
+      nextQuestion: qNum < 5 ? "Quelles ont été les principales difficultés méthodologiques rencontrées et comment les avez-vous surmontées ?" : null,
+      finished: qNum >= 5
+    };
+  }
+
+  // 6. Problématique
+  if (taskLower.includes('problématique et la question') || taskLower.includes('problématique')) {
     const s = c.subject || 'votre sujet';
     const obs = c.observedProblem || 'les décalages constatés sur le terrain';
     return {
@@ -92694,8 +92761,8 @@ function mockGenerateStructured(task, context) {
     };
   }
 
-  // 3. Plan / Structure
-  if (taskLower.includes('plan') || taskLower.includes('outline') || taskLower.includes('structure')) {
+  // 7. Plan / Structure
+  if (taskLower.includes('plan cohérent') || taskLower.includes('plan') || taskLower.includes('outline')) {
     return {
       sections: [
         {
@@ -92723,84 +92790,34 @@ function mockGenerateStructured(task, context) {
     };
   }
 
-  // 4. Relecture / Rédaction
-  if (taskLower.includes('rédaction') || taskLower.includes('writing') || taskLower.includes('review')) {
-    const rawText = (c.text || c.originalText || '').trim();
-    return {
-      revisedText: rawText || "Texte retravaillé avec clarté et précision méthodologique.",
-      feedback: "Le texte est globalement pertinent. Pour renforcer son impact académique, veillez à soigner la fluidité des transitions et la rigueur du vocabulaire.",
-      claimsToSource: [
-        "Pensez à citer les sources scientifiques appuyant vos assertions principales."
-      ],
-      learningNote: "En rédaction universitaire, la clarté et la neutralité renforcent l'autorité de la démonstration."
-    };
-  }
-
-  // 5. Simulation de jury : début
-  if (taskLower.includes('jury') && (taskLower.includes('simul') || taskLower.includes('question'))) {
-    return {
-      question: "Pourriez-vous expliciter en quoi votre cadre méthodologique permet de répondre précisément à votre question de recherche centrale ?",
-      questionNumber: 1,
-      totalQuestions: 5,
-      difficulty: c.difficulty || "intermediate",
-      simulationId: "sim-" + Date.now()
-    };
-  }
-
-  // 6. Simulation de jury : évaluation
-  if (taskLower.includes('évalu') || taskLower.includes('jury')) {
-    const qNum = c.questionNumber || 1;
-    return {
-      score: 84,
-      strengths: [
-        "Réponse bien argumentée et posture académique affirmée",
-        "Bonne utilisation des concepts du domaine d'étude"
-      ],
-      improvements: [
-        "Illustrer par un exemple concret issu de votre terrain de recherche",
-        "Expliciter davantage les limites méthodologiques rencontrées"
-      ],
-      advice: "Conservez ce ton posé et assurez-vous de toujours relier vos arguments à votre problématique.",
-      nextQuestion: qNum < 5 ? "Quelles ont été les principales difficultés rencontrées lors de votre recueil de données et comment les avez-vous surmontées ?" : null,
-      finished: qNum >= 5
-    };
-  }
-
-  // 7. Guides : explication de concept
-  if (taskLower.includes('concept')) {
-    return {
-      concept: c.concept || "Concept méthodologique",
-      basic: "Définition introductive et repères fondamentaux pour situer la notion.",
-      applied: "Mise en pratique opérationnelle dans le cadre d'un travail universitaire.",
-      advanced: "Discussions critiques et nuances épistémologiques.",
-      example: "Illustration concrète appliquée à un mémoire universitaire.",
-      glossary: [
-        { term: "Méthodologie", definition: "Démarche ordonnée suivie pour parvenir à une démonstration rigoureuse." }
-      ]
-    };
-  }
-
-  // 8. Guides : quiz
-  if (taskLower.includes('quiz')) {
-    return {
-      concept: c.concept || "Quiz de méthodologie",
-      questions: [
-        {
-          question: "Quel est le rôle principal d'une problématique de recherche ?",
-          options: [
-            "Résumer l'ensemble des lectures consultées",
-            "Poser une question centrale mettant en tension un problème et des concepts",
-            "Donner le plan de travail de l'introduction",
-            "Énumérer les hypothèses sans justification"
-          ],
-          answerIndex: 1,
-          explanation: "La problématique formule la question nodale qui guide toute l'investigation scientifique."
-        }
-      ]
-    };
-  }
-
-  return {};
+  // 8. Analyse du sujet (par défaut)
+  const s = c.subject || 'Sujet de recherche académique';
+  return {
+    clarity: 82,
+    scope: 78,
+    feasibility: 85,
+    feedback: `Le sujet proposé « ${s} » constitue une base prometteuse${c.field ? ` dans le domaine de ${c.field}` : ''}. Pour un niveau ${c.level || 'universitaire'}, il est recommandé de clarifier les concepts charnières dès l'introduction et de délimiter le terrain d'investigation pour garantir la faisabilité du calendrier de recherche.`,
+    proposals: [
+      {
+        title: `Analyse empirique et perspectives critiques de : ${s}`,
+        rationale: "Cette formulation resserre l'angle de recherche sur les faits observables et facilite la collecte de données concrètes sur le terrain.",
+        strengths: ["Cadrage conceptuel rigoureux", "Démarche méthodologique directement opérationnelle"],
+        limits: ["Nécessite un accès direct à des données fiables ou un corpus documentaire qualifié"]
+      },
+      {
+        title: `Enjeux, tensions et dynamiques contemporaines autour de : ${s}`,
+        rationale: "Une orientation qui permet d'explorer les débats actuels et de confronter différents points de vue théoriques.",
+        strengths: ["Favorise une réflexion critique approfondie", "Permet de croiser plusieurs grilles de lecture interdisciplinaires"],
+        limits: ["Risque de dispersion si les critères de délimitation ne sont pas strictement posés"]
+      },
+      {
+        title: `Pratiques, mutations et facteurs déterminants dans : ${s}`,
+        rationale: "Cette approche met en lumière les leviers d'action et les facteurs explicatifs du phénomène étudié.",
+        strengths: ["Forte valeur ajoutée méthodologique", "Résultats facilement transposables et discutables"],
+        limits: ["Exige de bien distinguer les causes des simples corrélations observées"]
+      }
+    ]
+  };
 }
 
 
@@ -92844,14 +92861,15 @@ async function generateStructured(task, context, parse4) {
   }
 }
 function parseFirstJuryQuestion(value) {
-  const question = objectValue(value).question;
+  const obj = typeof value === "object" && value !== null ? value : {};
+  const question = obj.question;
   if (typeof question !== "string" || question.trim().length < 10) {
     throw new Error("Jury question is missing or too short.");
   }
   return { question };
 }
 function parseJuryEvaluation(value) {
-  const result = objectValue(value);
+  const result = typeof value === "object" && value !== null ? value : {};
   const strengths = result.strengths;
   const improvements = result.improvements;
   if (typeof result.score !== "number" || !Number.isInteger(result.score) || result.score < 0 || result.score > 100 || !Array.isArray(strengths) || strengths.length === 0 || !strengths.every((item) => typeof item === "string") || !Array.isArray(improvements) || improvements.length === 0 || !improvements.every((item) => typeof item === "string") || typeof result.advice !== "string" || result.advice.length < 10 || result.nextQuestion !== null && (typeof result.nextQuestion !== "string" || result.nextQuestion.length < 10)) {
@@ -92870,6 +92888,7 @@ function sendAiError(req, res, error40) {
     res.status(error40.statusCode).json({ error: error40.message });
     return;
   }
+  console.error("AI Error:", error40?.message || error40);
   req.log.error({ err: error40 }, "Academic assistant request failed");
   res.status(500).json({ error: "Une erreur est survenue. R\xE9essaie." });
 }
