@@ -1,38 +1,6 @@
-<svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="favNavy" x1="4" y1="4" x2="60" y2="60" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#1E3A5F"/>
-      <stop offset="100%" stop-color="#0F2438"/>
-    </linearGradient>
-    <linearGradient id="favEmerald" x1="20" y1="16" x2="48" y2="52" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#10B981"/>
-      <stop offset="100%" stop-color="#059669"/>
-    </linearGradient>
-    <linearGradient id="favGold" x1="26" y1="12" x2="38" y2="24" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FBBF24"/>
-      <stop offset="100%" stop-color="#D97706"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Squircle Base -->
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#favNavy)"/>
-  <rect x="2.5" y="2.5" width="59" height="59" rx="15.5" stroke="#FFFFFF" stroke-opacity="0.12"/>
-
-  <!-- Open Book Curve -->
-  <path d="M16 45 C23 41.5 30 42.5 32 44.5 C34 42.5 41 41.5 48 45" 
-        stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M18 49 C24 46.5 30 47.5 32 48.8 C34 47.5 40 46.5 46 49" 
-        stroke="url(#favEmerald)" stroke-width="2.2" stroke-linecap="round"/>
-
-  <!-- Stylized Monogram "A" -->
-  <path d="M20 41 L32 17 L44 41" 
-        stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-
-  <!-- Mortarboard Diamond -->
-  <path d="M22 30 L32 25 L42 30 L32 35 Z" 
-        fill="url(#favEmerald)" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/>
-
-  <!-- Guiding Star Beacon -->
-  <polygon points="32,10.5 33.8,14.5 38,15 34.8,18 35.8,22 32,19.8 28.2,22 29.2,18 26,15 30.2,14.5" 
-           fill="url(#favGold)"/>
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="48" height="48" rx="13" fill="#31536B"/>
+  <path d="M24 5.5 41 15.1v17.8L24 42.5 7 32.9V15.1L24 5.5Z" fill="#F6F0E3" fill-opacity=".12"/>
+  <path d="m14.7 31.5 9.3-17.8 9.3 17.8M18.5 25.2h11M10.8 36h26.4" stroke="#F6F0E3" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M24 5.8v7.4" stroke="#9BC4A8" stroke-width="2.8" stroke-linecap="round"/>
 </svg>
