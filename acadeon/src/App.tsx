@@ -94,33 +94,273 @@ function CacheSync() {
   useEffect(() => { let previous: string | null | undefined; return addListener(({ user }) => { const id = user?.id ?? null; if (previous !== undefined && previous !== id) qc.clear(); previous = id; }); }, [addListener, qc]);
   return null;
 }
-function AuthFrame({ children }: { children: React.ReactNode }) { return <main className="auth-page"><div className="auth-note"><BrandMark /><p>Votre travail, vos idées, votre voix.</p><span>Un accompagnement méthodologique pensé pour vous faire progresser.</span></div><section>{children}</section></main>; }
-function SignInPage() { usePageMeta('Connexion étudiant | Acadéon', 'Connectez-vous à votre espace académique sécurisé pour retrouver vos projets et votre progression.', true); return <AuthFrame><SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} /></AuthFrame>; }
-function SignUpPage() { usePageMeta('Créer un compte étudiant | Acadéon', 'Ouvrez un espace privé pour organiser votre travail académique et avancer étape par étape.', true); return <AuthFrame><SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /></AuthFrame>; }
-function HomeRedirect() { return <><Show when="signed-in"><Redirect to="/dashboard" /></Show><Show when="signed-out"><Landing /></Show></>; }
-function ClerkRoutes() {
-  const [, setLocation] = useLocation();
-  return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={clerkAppearance} signInUrl={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} localization={clerkLocalization} routerPush={to => setLocation(stripBase(to))} routerReplace={to => setLocation(stripBase(to), { replace: true })}>
-    <QueryClientProvider client={queryClient}><CacheSync /><Switch>
-      <Route path="/" component={HomeRedirect} />
-      <Route path="/sign-in/*?" component={SignInPage} /><Route path="/sign-up/*?" component={SignUpPage} />
-      <Route path="/dashboard"><Protected><Dashboard /></Protected></Route>
-      <Route path="/projects/new"><Protected><NewProject /></Protected></Route>
-      <Route path="/projects/:projectId"><Protected><ProjectPage /></Protected></Route>
-      <Route path="/projects/:projectId/:section"><Protected><ProjectPage /></Protected></Route>
-      <Route path="/guides"><Protected><GuidesPage /></Protected></Route><Route path="/pricing"><Protected><PricingPage /></Protected></Route>
-      <Route component={NotFound} />
-    </Switch></QueryClientProvider>
-  </ClerkProvider>;
+interface StudentUser {
+  firstName: string;
+  fullName?: string;
+  email: string;
+  institution?: string;
+  level?: string;
 }
-function Protected({ children }: { children: React.ReactNode }) { return <><Show when="signed-in">{children}</Show><Show when="signed-out"><Redirect to="/" /></Show></>; }
+
+function getStudentUser(): StudentUser | null {
+  try {
+    const raw = localStorage.getItem('acadeon_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setStudentUser(user: StudentUser): void {
+  try {
+    localStorage.setItem('acadeon_user', JSON.stringify(user));
+  } catch {}
+  window.dispatchEvent(new Event('acadeon_auth_change'));
+}
+
+function clearStudentUser(): void {
+  try {
+    localStorage.removeItem('acadeon_user');
+  } catch {}
+  window.dispatchEvent(new Event('acadeon_auth_change'));
+}
+
+function useStudentAuth() {
+  const [user, setUser] = useState<StudentUser | null>(() => getStudentUser());
+  useEffect(() => {
+    const handler = () => setUser(getStudentUser());
+    window.addEventListener('acadeon_auth_change', handler);
+    window.addEventListener('storage', handler);
+    return () => {
+      window.removeEventListener('acadeon_auth_change', handler);
+      window.removeEventListener('storage', handler);
+    };
+  }, []);
+  return { user, isLoggedIn: !!user, login: setStudentUser, logout: clearStudentUser };
+}
+
+function StudentLoginForm() {
+  const [, setLocation] = useLocation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const prefix = (email.split('@')[0] || 'Étudiant').trim();
+    const name = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    setStudentUser({ firstName: name, email: email || 'etudiant@acadeon.ci', institution: 'Université', level: 'Master 1' });
+    setLocation('/dashboard');
+  };
+
+  const quickDemo = () => {
+    setStudentUser({ firstName: 'Kouassi', email: 'kouassi.etudiant@acadeon.ci', institution: 'Université Félix Houphouët-Boigny', level: 'Master 1' });
+    setLocation('/dashboard');
+  };
+
+  return (
+    <form className="form-card auth-form-card" onSubmit={submit}>
+      <div className="form-section-head">
+        <span className="step-counter">CI</span>
+        <div>
+          <h2>Connexion à votre espace</h2>
+          <p>Retrouvez vos projets académiques et vos simulations de jury.</p>
+        </div>
+      </div>
+      <div className="form-grid">
+        <label className="field field-span">
+          <span>Adresse email ou identifiant <i>*</i></span>
+          <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="etudiant@univ-fhb.edu.ci" />
+        </label>
+        <label className="field field-span">
+          <span>Mot de passe <i>*</i></span>
+          <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+        </label>
+      </div>
+      <div className="form-actions">
+        <button type="submit" className="button button-primary">Se connecter <ArrowRight size={16} /></button>
+        <button type="button" className="button button-secondary" onClick={quickDemo}><Lightbulb size={15} /> Accès rapide démo</button>
+      </div>
+      <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#74818b' }}>
+        <p>Pas encore inscrit ? <Link href="/sign-up" style={{ color: '#31536b', fontWeight: 600 }}>Créer mon espace étudiant</Link></p>
+        <p style={{ marginTop: '0.5rem' }}><Link href="/" style={{ color: '#74818b' }}>← Retour à l’accueil</Link></p>
+      </div>
+    </form>
+  );
+}
+
+function StudentRegisterForm() {
+  const [, setLocation] = useLocation();
+  const [f, setF] = useState({ name: '', email: '', level: 'Master 1', institution: 'Université Félix Houphouët-Boigny', password: '' });
+  const change = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [e.target.name]: e.target.value });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const first = f.name.trim().split(' ')[0] || 'Étudiant';
+    setStudentUser({ firstName: first, fullName: f.name, email: f.email, level: f.level, institution: f.institution });
+    setLocation('/dashboard');
+  };
+
+  return (
+    <form className="form-card auth-form-card" onSubmit={submit}>
+      <div className="form-section-head">
+        <span className="step-counter">CI</span>
+        <div>
+          <h2>Créer mon espace étudiant</h2>
+          <p>Un accompagnement méthodologique de votre sujet à votre soutenance.</p>
+        </div>
+      </div>
+      <div className="form-grid">
+        <label className="field field-span">
+          <span>Nom et prénom <i>*</i></span>
+          <input name="name" required value={f.name} onChange={change} placeholder="Ex. Kouassi Marc" />
+        </label>
+        <label className="field field-span">
+          <span>Email universitaire ou personnel <i>*</i></span>
+          <input type="email" name="email" required value={f.email} onChange={change} placeholder="etudiant@univ.ci" />
+        </label>
+        <label className="field">
+          <span>Niveau d’études</span>
+          <select name="level" value={f.level} onChange={change}>
+            <option value="Licence 3">Licence 3</option>
+            <option value="Master 1">Master 1</option>
+            <option value="Master 2">Master 2</option>
+            <option value="Doctorat">Doctorat</option>
+            <option value="BTS">BTS</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>Établissement</span>
+          <select name="institution" value={f.institution} onChange={change}>
+            <option value="Université Félix Houphouët-Boigny">Univ. Félix Houphouët-Boigny (Abidjan)</option>
+            <option value="INP-HB Yamoussoukro">INP-HB (Yamoussoukro)</option>
+            <option value="Université Alassane Ouattara">Univ. Alassane Ouattara (Bouaké)</option>
+            <option value="Université Nangui Abrogoua">Univ. Nangui Abrogoua</option>
+            <option value="Autre établissement">Autre établissement</option>
+          </select>
+        </label>
+        <label className="field field-span">
+          <span>Mot de passe <i>*</i></span>
+          <input type="password" name="password" required value={f.password} onChange={change} placeholder="Créez un mot de passe sécurisé" />
+        </label>
+      </div>
+      <div className="form-actions">
+        <button type="submit" className="button button-primary">Créer mon espace <ArrowRight size={16} /></button>
+        <p><ShieldCheck size={15} /> Accompagnement méthodologique gratuit & sécurisé</p>
+      </div>
+      <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.875rem', color: '#74818b' }}>
+        <p>Déjà inscrit ? <Link href="/sign-in" style={{ color: '#31536b', fontWeight: 600 }}>Se connecter</Link></p>
+        <p style={{ marginTop: '0.5rem' }}><Link href="/" style={{ color: '#74818b' }}>← Retour à l’accueil</Link></p>
+      </div>
+    </form>
+  );
+}
+
+function AuthFrame({ children }: { children: React.ReactNode }) { return <main className="auth-page"><div className="auth-note"><BrandMark /><p>Votre travail, vos idées, votre voix.</p><span>Un accompagnement méthodologique pensé pour vous faire progresser.</span></div><section>{children}</section></main>; }
+
+function SignInPage() {
+  const { isLoggedIn } = useStudentAuth();
+  if (isLoggedIn) return <Redirect to="/dashboard" />;
+  usePageMeta('Connexion étudiant | Acadéon', 'Connectez-vous à votre espace académique sécurisé pour retrouver vos projets et votre progression.', true);
+  return <AuthFrame><StudentLoginForm /></AuthFrame>;
+}
+
+function SignUpPage() {
+  const { isLoggedIn } = useStudentAuth();
+  if (isLoggedIn) return <Redirect to="/dashboard" />;
+  usePageMeta('Créer un compte étudiant | Acadéon', 'Ouvrez un espace privé pour organiser votre travail académique et avancer étape par étape.', true);
+  return <AuthFrame><StudentRegisterForm /></AuthFrame>;
+}
+
+function HomeRedirect() {
+  const { isLoggedIn } = useStudentAuth();
+  if (isLoggedIn) return <Redirect to="/dashboard" />;
+  return <Landing />;
+}
+
+function Protected({ children }: { children: React.ReactNode }) {
+  const { isLoggedIn } = useStudentAuth();
+  if (!isLoggedIn) return <Redirect to="/sign-in" />;
+  return <>{children}</>;
+}
+
+function ClerkRoutes() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Switch>
+        <Route path="/" component={HomeRedirect} />
+        <Route path="/sign-in/*?" component={SignInPage} />
+        <Route path="/sign-up/*?" component={SignUpPage} />
+        <Route path="/dashboard"><Protected><Dashboard /></Protected></Route>
+        <Route path="/projects/new"><Protected><NewProject /></Protected></Route>
+        <Route path="/projects/:projectId"><Protected><ProjectPage /></Protected></Route>
+        <Route path="/projects/:projectId/:section"><Protected><ProjectPage /></Protected></Route>
+        <Route path="/guides"><Protected><GuidesPage /></Protected></Route>
+        <Route path="/pricing"><Protected><PricingPage /></Protected></Route>
+        <Route component={NotFound} />
+      </Switch>
+    </QueryClientProvider>
+  );
+}
 
 function AppShell({ children, current = '' }: { children: React.ReactNode; current?: string }) {
-  const [open, setOpen] = useState(false); const { signOut } = useClerk(); const { user } = useUser(); const name = user?.firstName || 'Étudiant';
+  const [open, setOpen] = useState(false);
+  const { user } = useStudentAuth();
+  const name = user?.firstName || 'Étudiant';
   const health = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), refetchInterval: 30000 } });
-  return <div className="app-shell"><aside className={`sidebar ${open ? 'sidebar-open' : ''}`}><div className="side-brand"><BrandMark light /></div><div className="side-caption">ESPACE DE TRAVAIL</div><nav className="side-nav"><Link href="/dashboard" className={`nav-link ${current === 'dashboard' ? 'active' : ''}`}><FolderKanban size={18} /> Tableau de bord</Link><div className="side-caption side-caption-space">ACCOMPAGNEMENT</div><Link href="/guides" className={`nav-link ${current === 'guides' ? 'active' : ''}`}><BookOpen size={18} /> Guides méthode</Link><Link href="/pricing" className={`nav-link ${current === 'pricing' ? 'active' : ''}`}><Compass size={18} /> Offres</Link></nav><div className="sidebar-bottom"><div className="sidebar-tip"><span className="tip-icon"><Lightbulb size={16} /></span><strong>Un pas après l’autre.</strong><p>La qualité d’un travail se construit, elle ne se devine pas.</p></div><button className="profile-row" onClick={() => signOut({ redirectUrl: basePath || '/' })}><span className="profile-initial">{name.slice(0, 1).toUpperCase()}</span><span><b>{name}</b><small>Déconnexion</small></span><LogOut size={16} /></button></div></aside>
-    {open && <button className="mobile-scrim" onClick={() => setOpen(false)} aria-label="Fermer le menu" />}
-     <main className="main-pane"><header className="topbar"><button className="icon-button mobile-menu" onClick={() => setOpen(!open)} aria-label="Ouvrir le menu"><Menu size={20} /></button><div className="breadcrumb"><span>Acadéon</span><ChevronRight size={14} /><b>{current === 'dashboard' ? 'Tableau de bord' : labelByStep[current] || (current === 'guides' ? 'Guides méthode' : current === 'pricing' ? 'Offres' : 'Mon espace')}</b></div><div className="topbar-right"><span className={`status-online ${health.isError ? 'status-offline' : ''}`} role="status"><i /> {health.isError ? 'Service indisponible' : health.isLoading ? 'Connexion…' : 'Espace personnel'}</span><span className="avatar">{name.slice(0, 1).toUpperCase()}</span></div></header><div className="content-wrap page-enter">{children}</div><footer className="app-footer"><span>Acadéon · Votre travail, votre voix.</span><span>Fait pour apprendre, pas pour faire à votre place.</span></footer></main></div>;
+
+  const handleLogout = () => {
+    clearStudentUser();
+    window.location.href = basePath || '/';
+  };
+
+  return (
+    <div className="app-shell">
+      <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
+        <div className="side-brand"><BrandMark light /></div>
+        <div className="side-caption">ESPACE DE TRAVAIL</div>
+        <nav className="side-nav">
+          <Link href="/dashboard" className={`nav-link ${current === 'dashboard' ? 'active' : ''}`}><FolderKanban size={18} /> Tableau de bord</Link>
+          <div className="side-caption side-caption-space">ACCOMPAGNEMENT</div>
+          <Link href="/guides" className={`nav-link ${current === 'guides' ? 'active' : ''}`}><BookOpen size={18} /> Guides méthode</Link>
+          <Link href="/pricing" className={`nav-link ${current === 'pricing' ? 'active' : ''}`}><Compass size={18} /> Offres</Link>
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="sidebar-tip">
+            <span className="tip-icon"><Lightbulb size={16} /></span>
+            <strong>Un pas après l’autre.</strong>
+            <p>La qualité d’un travail se construit, elle ne se devine pas.</p>
+          </div>
+          <button className="profile-row" onClick={handleLogout} title="Se déconnecter">
+            <span className="profile-initial">{name.slice(0, 1).toUpperCase()}</span>
+            <span><b>{name}</b><small>Déconnexion</small></span>
+            <LogOut size={16} />
+          </button>
+        </div>
+      </aside>
+      {open && <button className="mobile-scrim" onClick={() => setOpen(false)} aria-label="Fermer le menu" />}
+      <main className="main-pane">
+        <header className="topbar">
+          <button className="icon-button mobile-menu" onClick={() => setOpen(!open)} aria-label="Ouvrir le menu"><Menu size={20} /></button>
+          <div className="breadcrumb">
+            <span>Acadéon</span><ChevronRight size={14} />
+            <b>{current === 'dashboard' ? 'Tableau de bord' : labelByStep[current] || (current === 'guides' ? 'Guides méthode' : current === 'pricing' ? 'Offres' : 'Mon espace')}</b>
+          </div>
+          <div className="topbar-right">
+            <span className={`status-online ${health.isError ? 'status-offline' : ''}`} role="status">
+              <i /> {health.isError ? 'Service indisponible' : health.isLoading ? 'Connexion…' : (user?.institution || 'Espace personnel')}
+            </span>
+            <span className="avatar">{name.slice(0, 1).toUpperCase()}</span>
+          </div>
+        </header>
+        <div className="content-wrap page-enter">{children}</div>
+        <footer className="app-footer">
+          <span>Acadéon · Votre travail, votre voix.</span>
+          <span>Fait pour apprendre, pas pour faire à votre place.</span>
+        </footer>
+      </main>
+    </div>
+  );
 }
 
 function Landing() {
