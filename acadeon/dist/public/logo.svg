@@ -1,0 +1,9 @@
+<svg width="254" height="60" viewBox="0 0 254 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(6 6)">
+    <path d="M24 4.5 42 14.7v18.6L24 43.5 6 33.3V14.7L24 4.5Z" fill="#31536B" fill-opacity=".12"/>
+    <path d="M14.2 31.7 24 13l9.8 18.7M18.2 25.1h11.6M10.5 36.5h27" fill="none" stroke="#31536B" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M24 4.5v8.2" stroke="#548A70" stroke-width="2.8" stroke-linecap="round"/>
+  </g>
+  <text x="66" y="41" fill="#223A4D" font-family="Manrope, DM Sans, sans-serif" font-size="31" font-weight="800" letter-spacing="-2.2">Acadéon</text>
+  <circle cx="201" cy="38.5" r="3.5" fill="#548A70"/>
+</svg>

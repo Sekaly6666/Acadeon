@@ -1,0 +1,18 @@
+{
+  "name": "Acadéon — accompagnement académique",
+  "short_name": "Acadéon",
+  "description": "Un accompagnement méthodologique pour les étudiants.",
+  "lang": "fr-CI",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f0e3",
+  "theme_color": "#31536b",
+  "icons": [
+    {
+      "src": "app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

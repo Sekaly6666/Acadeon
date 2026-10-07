@@ -1,0 +1,25 @@
+{
+  "name": "acadeon",
+  "version": "1.0.0",
+  "description": "Acadéon - Plateforme d accompagnement et suivi académique (mémoires, thèses, projets)",
+  "type": "module",
+  "scripts": {
+    "dev": "bash start.sh",
+    "start": "bash start.sh",
+    "start:all": "bash start.sh",
+    "start:server": "node --env-file=api-server/.env api-server/dist/index.mjs",
+    "start:frontend": "node acadeon/serve.mjs",
+    "test": "node test-terminal.mjs",
+    "test:terminal": "node test-terminal.mjs",
+    "build:server": "cd api-server && node build.mjs"
+  },
+  "keywords": [
+    "acadeon",
+    "academic",
+    "thesis",
+    "ai",
+    "research"
+  ],
+  "author": "Acadeon Team",
+  "license": "ISC"
+}
